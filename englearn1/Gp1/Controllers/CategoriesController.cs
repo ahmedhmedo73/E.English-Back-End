@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using Gp1.model;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,9 @@ namespace Gp1.Controllers
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public string? Description { get; set; }
+        public  IFormFile? pictureFile { get; set; }
+
 
     }
 
@@ -22,15 +26,18 @@ namespace Gp1.Controllers
     public class CategoriesController : ControllerBase
     {
 
-        private DB _db;
-        private IMapper _mapper;
-        public CategoriesController(DB db, IMapper mapper)
+        readonly DB _db;
+        readonly IMapper _mapper;
+        readonly IWebHostEnvironment _webHostEnvironment;
+
+        public CategoriesController(DB db, IMapper mapper, IWebHostEnvironment webHostEnvironment)
         {
             _db = db;
             _mapper = mapper;
+            _webHostEnvironment = webHostEnvironment;
         }
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Categoryform categoryform)
+        public async Task<IActionResult> Create([FromForm] Categoryform categoryform)
         {
             if (!ModelState.IsValid)
                 return Ok(new APIResponseModel
@@ -45,6 +52,8 @@ namespace Gp1.Controllers
                 var category = new Category
                 {
                     Name = categoryform.Name,
+                    Description = categoryform.Description,
+                    Picture = categoryform.pictureFile != null ? await UploadPictureAndGetPath(categoryform.pictureFile) : string.Empty,
                     CreationTime = DateTime.UtcNow
                 };
 
@@ -74,7 +83,7 @@ namespace Gp1.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] Categoryform categoryform)
+        public async Task<IActionResult> Update([FromForm] Categoryform categoryform)
         {
             if (!ModelState.IsValid)
                 return Ok(new APIResponseModel
@@ -99,6 +108,10 @@ namespace Gp1.Controllers
 
 
                 categoryInDb.Name = categoryform.Name;
+                categoryInDb.Description = categoryform.Description;
+
+                if (categoryform.pictureFile != null)
+                    categoryInDb.Picture = await UploadPictureAndGetPath(categoryform.pictureFile);
 
 
                 await _db.SaveChangesAsync();
@@ -153,7 +166,7 @@ namespace Gp1.Controllers
                             "category is not found"
                         }
                     });
-                
+
 
                 _db.Remove(categoryInDb);
                 await _db.SaveChangesAsync();
@@ -203,8 +216,44 @@ namespace Gp1.Controllers
         }
 
 
-        
 
+
+        private async Task<string> UploadPictureAndGetPath(IFormFile pictureFile)
+        {
+
+            try
+            {
+
+                string filePath = "Uploads/Pictures";
+                FileInfo fi = new FileInfo(pictureFile.FileName);
+
+                string originalFileName = Path.GetFileName(pictureFile.FileName);
+                var date = DateTime.Now.ToString("hhmmssffffff");
+                var uploads = Path.Combine(_webHostEnvironment.WebRootPath, filePath);
+                var setFilename = "File" + date + originalFileName + fi.Extension;
+                var setFilePath = Path.Combine(uploads, setFilename);
+
+                if (pictureFile.Length > 0)
+                {
+
+                    using (var stream = new FileStream(setFilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
+                    {
+                        await pictureFile.CopyToAsync(stream);
+                        await stream.DisposeAsync();
+                        stream.Close();
+                    }
+                }
+                return "/" + filePath + "/" + setFilename;
+
+
+
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return string.Empty;
+        }
 
 
 
