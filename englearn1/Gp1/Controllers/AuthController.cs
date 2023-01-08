@@ -50,7 +50,7 @@ namespace Gp1.Controllers
 
             return Ok(result);
         }
- 
+
         [HttpPost]
         public async Task<IActionResult> CreateMyAdminUsers()
         {
@@ -90,7 +90,7 @@ namespace Gp1.Controllers
                         else
                         {
 
-                            var roleCreated = await _roleManager.CreateAsync(new ApplicationRole { Name = Roles.Admin.ToString() });
+                            var roleCreated = await _roleManager.CreateAsync(new ApplicationRole { Id = Guid.NewGuid().ToString() + Guid.NewGuid().ToString(), Name = Roles.Admin.ToString() });
                             if (roleCreated.Succeeded)
                             {
                                 var assignedResult = await _userManager.AddToRoleAsync(myUser, Roles.Admin.ToString());
@@ -126,6 +126,6 @@ namespace Gp1.Controllers
             return Ok(new { msg = "error", errors });
         }
 
-    
+
     }
 }

@@ -62,7 +62,7 @@ namespace Gp1.Services
             }
             else
             {
-                var createRole = await _roleManager.CreateAsync(new ApplicationRole { Name = Roles.User.ToString() });
+                var createRole = await _roleManager.CreateAsync(new ApplicationRole { Id = Guid.NewGuid().ToString() + Guid.NewGuid().ToString(), Name = Roles.User.ToString() });
                 if(!createRole.Succeeded)
                     return new AuthModel { Message = string.Join(" , ", createRole.Errors.Select(c => c.Description)) };
 

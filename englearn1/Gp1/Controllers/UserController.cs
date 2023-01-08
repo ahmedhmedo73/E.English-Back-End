@@ -155,7 +155,7 @@ namespace Gp1.Controllers
                 }
                 else
                 {
-                    var roleCreated = await _roleManager.CreateAsync(new ApplicationRole { Name = Roles.User.ToString() });
+                    var roleCreated = await _roleManager.CreateAsync(new ApplicationRole { Id = Guid.NewGuid().ToString() + Guid.NewGuid().ToString(), Name = Roles.User.ToString() });
                     if (roleCreated.Succeeded)
                     {
                         var assignToRole = await _userManager.AddToRoleAsync(user, Roles.User.ToString());
