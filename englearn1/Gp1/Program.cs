@@ -100,6 +100,7 @@ app.UseCors(builder =>
 });
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
