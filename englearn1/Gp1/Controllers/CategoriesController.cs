@@ -22,7 +22,6 @@ namespace Gp1.Controllers
 
     [Route("[controller]/[action]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
     public class CategoriesController : ControllerBase
     {
 

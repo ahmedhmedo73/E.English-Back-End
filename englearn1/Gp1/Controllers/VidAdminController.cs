@@ -21,14 +21,17 @@ namespace Gp1.Controllers
         private DB _db;
 
         private readonly IWebHostEnvironment webHostEnv;
+        readonly IWebHostEnvironment _webHostEnvironment;
 
-        public VidAdminController(DB db, IWebHostEnvironment webHostEnvironment)
+        public VidAdminController(DB db, IWebHostEnvironment webHostEnvironment, IWebHostEnvironment webHostEnvironment1)
         {
             webHostEnv = webHostEnvironment;
+            _webHostEnvironment = webHostEnvironment1;
             _db = db;
         }
 
         [HttpPost]
+        [RequestSizeLimit(100_000_000)]
         public IActionResult uploadvideo([FromForm] IList<IFormFile> files, [FromForm] VideoForm videoForm)
         {
             if (files == null)
@@ -46,7 +49,7 @@ namespace Gp1.Controllers
             {
                 foreach (var file in files)
                 {
-                    string Pathvid = Path.Combine(webHostEnv.ContentRootPath, "vid");
+                    string Pathvid = Path.Combine(_webHostEnvironment.WebRootPath, "Uploads/Videos");
                     Video vid;
                     string filepath = Path.Combine(Pathvid, file.FileName);
                     using (var stream = new FileStream(filepath, FileMode.Create))
@@ -57,7 +60,7 @@ namespace Gp1.Controllers
                     vid = new Video();
                     vid.Name = videoForm.Name;
                     vid.CategoryId = videoForm.CategoryId;
-                    vid.Link_Vid = "vid/" + file.FileName;
+                    vid.Link_Vid = "Uploads/Videos" + file.FileName;
                     vid.CreationTime = DateTime.UtcNow;
                     _db.videos.Add(vid);
                     _db.SaveChanges();
